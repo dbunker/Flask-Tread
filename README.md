@@ -1,16 +1,62 @@
 Flask Tread
 ===========
 
-Flask Tread provides Flask route input and output validation, authentication and transformation. Validation and transformation is performed on the url parameters and the input and output json. Authentication is provided by creating and verifying the `token` key.
+Flask-Tread provides Flask route input and output validation, authentication and transformation. Validation and transformation is performed on the url parameters and the input and output json. Authentication is provided by creating and verifying the `token` json key.
+
+Example
+========
+
+[Blog](/examples/blog) in the [examples](/examples) directory is a an example Flask-Tread app. View [views.py](/examples/blog/app/mainapp/views.py) for more examples of Flask-Tread routes. 
+
+The following is from the `signup` function:
+``` py
+@route('/api/user', command='signup', takes={
+    'username': unicode,
+    'email': unicode,
+    'password': unicode
+}, sends={
+    'username': unicode,
+    'userId': id_to_hash,
+    'token': unicode
+})
+def signup():
+
+    # populated by Flask-Tread
+    json_data = flask.g.json_data
+    
+    username = json_data['username']
+    email = json_data['email']
+    password = json_data['password']
+    ...
+```
+
+This takes the following json on url `/api/user`:
+``` json
+{ 
+    "command": "signup", 
+    "username": "<username>", 
+    "email": "<email>", 
+    "password": "<password>" 
+}
+```
+
+Responds with:
+``` json
+{ 
+    "username": "<provided user name>", 
+    "username": "<hash of db id>", 
+    "token": "<generated token>" 
+}
+```
 
 Instructions
 ============
 
-Import the desired `flask_tread` functions and classes, then call `init_tread_app(app, login_key)` where `app` is the flask app and `login_key` is a unique string used for authentication.
+Import the desired Flask-Tread functions and classes, then call `init_tread_app(app, login_key)` where `app` is the flask app and `login_key` is a unique string used for authentication.
 
 There are two main routes, `@route` and `@auth_route`. `@auth_route` requires the client to provide a token previously generated using `create_token` for authentication. Routes can take the parameters: `path`, `command`, `params`, `takes`, and `sends`. The parameters `path` and `command` are the url path and json `command` key combo needed to trigger the route.
 
-The parameter `takes` is a dict containing verification or transformation functions. These are run on the json sent to the api. If verification fails, an error sent back to the client. Transformation is performed on each value provided to the api from the client and placed in `flask.g.json_data`. Similar to a verification and transformation, the authentication from`route_auth` populates `flask.g.user_id` for the user id of the `token` key provided. A list of all possible values for input keys to use for verification and transformation are provided below in Doc.
+The parameter `takes` is a dict containing verification or transformation functions. These are run on the json sent to the api. If verification fails, an error is sent back to the browser. Transformation is performed on each value provided to the api from the client and placed in `flask.g.json_data`. Similar to a verification and transformation, the authentication from`route_auth` populates `flask.g.user_id` for the user id of the `token` key provided. A list of all possible values for input keys to use for verification and transformation are provided below in Doc.
 
 The `params` parameter works similarly to `takes`, but operates on url parameters. The `sends` parameter also works similarly to `takes`, but operates on the output of the api.
 
@@ -69,8 +115,3 @@ Doc
         - Used as `MultiType([type, type, ...])` if one of many types can be accepted
     - `ignored`
         - Indicates key can be present, but will be ignored
-
-Examples
-========
-
-View [views.py](/examples/blog/app/mainapp/views.py) for examples of Flask Tread routes.
